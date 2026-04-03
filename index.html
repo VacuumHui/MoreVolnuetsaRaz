@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Морской Бой 2.0</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Подключаем PeerJS для P2P связи -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Морской Бой: Эволюция</h1>
+        
+        <!-- Панель подключения -->
+        <div id="connection-panel">
+            <p>Твой ID: <strong id="my-id">Генерация...</strong></p>
+            <input type="text" id="enemy-id" placeholder="Введи ID друга">
+            <button id="connect-btn">Подключиться</button>
+            <p id="status">Статус: Ожидание...</p>
+        </div>
+
+        <!-- Игровая зона -->
+        <div id="game-zone" style="display: none;">
+            <div class="panel">
+                <h3>Твои Способности</h3>
+                <button id="skill-radar" class="skill-btn">📡 Радар (1)</button>
+                <button id="skill-airstrike" class="skill-btn">✈️ Авиаудар (1)</button>
+            </div>
+            
+            <div class="boards">
+                <div class="board-wrapper">
+                    <h2>Твой флот</h2>
+                    <div id="my-board" class="board"></div>
+                </div>
+                <div class="board-wrapper">
+                    <h2>Флот противника</h2>
+                    <div id="enemy-board" class="board"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
