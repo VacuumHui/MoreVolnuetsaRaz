@@ -5,37 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Морской Бой 2.0</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Подключаем PeerJS для P2P связи -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Морской Бой: Эволюция</h1>
+        <h1>Морской Бой: Эволюция 🌊</h1>
         
         <!-- Панель подключения -->
         <div id="connection-panel">
-            <p>Твой ID: <strong id="my-id">Генерация...</strong></p>
-            <input type="text" id="enemy-id" placeholder="Введи ID друга">
-            <button id="connect-btn">Подключиться</button>
-            <p id="status">Статус: Ожидание...</p>
+            <p>Твой ID для друга: <strong id="my-id" style="color:#0be881;">Генерация...</strong></p>
+            <div class="connect-box">
+                <input type="text" id="enemy-id" placeholder="Введи ID друга">
+                <button id="connect-btn">Подключиться</button>
+            </div>
+            <p id="status">Ожидание подключения...</p>
         </div>
 
         <!-- Игровая зона -->
         <div id="game-zone" style="display: none;">
-            <div class="panel">
-                <h3>Твои Способности</h3>
+            <div class="top-panel">
+                <h2 id="turn-indicator">Расстановка флота...</h2>
+                <button id="ready-btn">Флот готов! В бой!</button>
+            </div>
+
+            <div class="skills-panel" id="skills-panel" style="display: none;">
                 <button id="skill-radar" class="skill-btn">📡 Радар (1)</button>
                 <button id="skill-airstrike" class="skill-btn">✈️ Авиаудар (1)</button>
+                <button id="skill-cancel" class="skill-btn cancel" style="display:none;">❌ Отмена</button>
             </div>
             
             <div class="boards">
                 <div class="board-wrapper">
-                    <h2>Твой флот</h2>
+                    <h3>Твой флот</h3>
                     <div id="my-board" class="board"></div>
                 </div>
                 <div class="board-wrapper">
-                    <h2>Флот противника</h2>
-                    <div id="enemy-board" class="board"></div>
+                    <h3>Территория врага</h3>
+                    <div id="enemy-board" class="board disabled"></div>
                 </div>
             </div>
         </div>
