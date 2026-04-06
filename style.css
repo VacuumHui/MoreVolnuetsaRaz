@@ -1,56 +1,60 @@
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
     background-color: #1e272e;
     color: #d2dae2;
     text-align: center;
     margin: 0;
     padding: 0;
+    touch-action: manipulation; /* Убирает лаг клика на мобилках */
 }
 
-.container { max-width: 900px; margin: 0 auto; padding: 20px; }
-h1 { color: #0fbcf9; margin-bottom: 10px; }
+.container { max-width: 100%; margin: 0 auto; padding: 10px; }
+h1 { color: #0fbcf9; margin: 10px 0; font-size: 24px; }
+h3 { margin: 5px 0; font-size: 18px; }
 
-#connection-panel { background: #485460; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
-.connect-box { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
-input { padding: 10px; border-radius: 5px; border: none; outline: none; width: 250px; }
+#connection-panel { background: #485460; padding: 15px; border-radius: 10px; }
+.connect-box { display: flex; flex-direction: column; gap: 10px; align-items: center; margin: 15px 0; }
+input { padding: 12px; border-radius: 5px; border: none; font-size: 16px; width: 90%; max-width: 300px; text-align: center; }
 
-button { padding: 10px 15px; background: #0be881; color: #1e272e; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.2s; }
-button:hover { background: #05c46b; }
-button:disabled { background: #808e9b; cursor: not-allowed; }
+button { padding: 12px 15px; background: #0be881; color: #1e272e; border: none; border-radius: 5px; font-weight: bold; font-size: 16px; width: 100%; max-width: 300px;}
+button:active { background: #05c46b; transform: scale(0.98); }
+button:disabled { background: #808e9b; opacity: 0.5; }
 
-#setup-panel { background: #3c40c6; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 2px dashed #575fcf; }
-#setup-panel h2 { margin-top: 0; color: #fff; }
-.setup-controls { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
-#setup-instruction { color: #ffdd59; font-weight: bold; margin-bottom: 0; }
+#setup-panel { background: #3c40c6; padding: 10px; border-radius: 10px; margin-bottom: 10px; }
+#setup-instruction { color: #ffdd59; margin-bottom: 10px; font-size: 16px; }
+.setup-controls { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
+.setup-controls button { width: 48%; font-size: 14px; padding: 10px; }
 
-.boards { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; margin-top: 20px; }
-.board-wrapper h3 { margin-bottom: 10px; }
+.big-btn { background: #ffdd59; font-size: 18px; padding: 15px; }
 
+.boards { display: flex; flex-direction: column; gap: 15px; align-items: center; margin-top: 10px; }
+.board-wrapper { width: 100%; max-width: 400px; }
+
+/* АДАПТИВНАЯ СЕТКА 10х10 */
 .board {
     display: grid;
-    grid-template-columns: repeat(10, 30px);
-    grid-template-rows: repeat(10, 30px);
-    gap: 2px;
+    grid-template-columns: repeat(10, 1fr);
+    aspect-ratio: 1 / 1; /* Всегда идеальный квадрат */
+    width: 100%;
+    gap: 1px;
     background-color: #0fbcf9;
-    padding: 3px;
-    border: 3px solid #4bcffa;
+    padding: 2px;
+    border: 2px solid #4bcffa;
     border-radius: 5px;
-    transition: opacity 0.3s;
+    touch-action: none; /* Запрещает свайп страницы при возне с кораблями */
 }
-
-.board.disabled { pointer-events: none; opacity: 0.6; filter: grayscale(50%); }
+.board.disabled { opacity: 0.5; pointer-events: none; }
 
 .cell {
-    width: 30px; height: 30px;
     background-color: #d2dae2;
-    cursor: pointer;
-    transition: 0.2s;
+    width: 100%; height: 100%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
+    font-size: 16px;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent; /* Убирает синий квадрат при тапе */
 }
-.board:not(.disabled) .cell:hover { background-color: #fff; transform: scale(1.05); }
 
-/* Состояния клеток */
+/* Цвета на поле */
 .cell.ship { background-color: #808e9b; } 
 .cell.hit { background-color: #ff3f34; }
 .cell.miss { background-color: #1e272e; }
@@ -58,8 +62,6 @@ button:disabled { background: #808e9b; cursor: not-allowed; }
 .cell.radar-zone { background-color: #ffd32a; opacity: 0.8; }
 .cell.sunk { background-color: #8b0000; }
 
-.skills-panel { margin: 15px 0; display: flex; justify-content: center; gap: 10px; }
-.skill-btn { background: #ffdd59; }
-.skill-btn:hover { background: #ffd32a; }
+.skills-panel { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
+.skill-btn { background: #ffdd59; width: auto; font-size: 14px; padding: 10px; }
 .skill-btn.cancel { background: #ff3f34; color: white; }
-.skill-btn.cancel:hover { background: #ff5e57; }
