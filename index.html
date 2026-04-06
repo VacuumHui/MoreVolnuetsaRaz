@@ -2,7 +2,6 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <!-- КРИТИЧЕСКИ ВАЖНО ДЛЯ МОБИЛОК: запрещаем масштабирование пальцами -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Морской Бой Mobile</title>
     <link rel="stylesheet" href="style.css">
@@ -16,6 +15,7 @@
         <div id="connection-panel">
             <p>Твой ID: <strong id="my-id" style="color:#0be881;">Генерация...</strong></p>
             <div class="connect-box">
+                <input type="text" id="my-nick" placeholder="Твой Никнейм (необязательно)">
                 <input type="text" id="enemy-id" placeholder="ID друга">
                 <button id="connect-btn">Связь</button>
             </div>
@@ -46,10 +46,10 @@
                 <button id="skill-cancel" class="skill-btn cancel" style="display:none;">❌ Отмена</button>
             </div>
             
-            <!-- ПОЛЯ (Адаптивные) -->
+            <!-- ПОЛЯ -->
             <div class="boards">
                 <div class="board-wrapper" id="enemy-wrapper" style="display: none;">
-                    <h3>Территория врага</h3>
+                    <h3 id="enemy-board-title">Территория врага</h3>
                     <div id="enemy-board" class="board disabled"></div>
                 </div>
                 <div class="board-wrapper" id="my-wrapper">
@@ -57,6 +57,16 @@
                     <div id="my-board" class="board"></div>
                 </div>
             </div>
+
+            <!-- ЧАТ (Новое) -->
+            <div id="chat-panel" style="display: none;">
+                <div id="chat-messages"></div>
+                <div class="chat-input-wrapper">
+                    <input type="text" id="chat-input" placeholder="Сообщение...">
+                    <button id="chat-send">➤</button>
+                </div>
+            </div>
+
         </div>
     </div>
     <script src="script.js"></script>
