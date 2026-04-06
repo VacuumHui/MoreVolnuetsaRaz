@@ -13,7 +13,7 @@
         
         <!-- Панель подключения -->
         <div id="connection-panel">
-            <p>Твой ID для друга: <strong id="my-id" style="color:#0be881;">Генерация...</strong></p>
+            <p>Твой ID: <strong id="my-id" style="color:#0be881;">Генерация...</strong></p>
             <div class="connect-box">
                 <input type="text" id="enemy-id" placeholder="Введи ID друга">
                 <button id="connect-btn">Подключиться</button>
@@ -23,11 +23,24 @@
 
         <!-- Игровая зона -->
         <div id="game-zone" style="display: none;">
-            <div class="top-panel">
-                <h2 id="turn-indicator">Расстановка флота...</h2>
-                <button id="ready-btn">Флот готов! В бой!</button>
+            
+            <!-- ПАНЕЛЬ РАССТАНОВКИ (Новое!) -->
+            <div id="setup-panel">
+                <h2>Подготовка флота</h2>
+                <div class="setup-controls">
+                    <button id="random-btn">🎲 Перемешать</button>
+                    <button id="rotate-btn">🔄 Поворот: Горизонт.</button>
+                    <button id="ready-btn">✅ В БОЙ!</button>
+                </div>
+                <p id="setup-instruction">Нажми на корабль или мину на своем поле, чтобы передвинуть вручную</p>
             </div>
 
+            <!-- Панель статуса в бою -->
+            <div class="top-panel" id="battle-panel" style="display: none;">
+                <h2 id="turn-indicator">Ожидание противника...</h2>
+            </div>
+
+            <!-- Спецумения -->
             <div class="skills-panel" id="skills-panel" style="display: none;">
                 <button id="skill-radar" class="skill-btn">📡 Радар (1)</button>
                 <button id="skill-airstrike" class="skill-btn">✈️ Авиаудар (1)</button>
