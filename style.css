@@ -5,14 +5,15 @@ body {
     text-align: center;
     margin: 0;
     padding: 0;
-    touch-action: manipulation; /* Убирает лаг клика на мобилках */
+    padding-bottom: 30px;
+    touch-action: manipulation;
 }
 
-.container { max-width: 100%; margin: 0 auto; padding: 10px; }
+.container { max-width: 100%; margin: 0 auto; padding: 10px; display: flex; flex-direction: column; align-items: center; }
 h1 { color: #0fbcf9; margin: 10px 0; font-size: 24px; }
 h3 { margin: 5px 0; font-size: 18px; }
 
-#connection-panel { background: #485460; padding: 15px; border-radius: 10px; }
+#connection-panel { background: #485460; padding: 15px; border-radius: 10px; width: 100%; max-width: 350px; }
 .connect-box { display: flex; flex-direction: column; gap: 10px; align-items: center; margin: 15px 0; }
 input { padding: 12px; border-radius: 5px; border: none; font-size: 16px; width: 90%; max-width: 300px; text-align: center; }
 
@@ -20,41 +21,25 @@ button { padding: 12px 15px; background: #0be881; color: #1e272e; border: none; 
 button:active { background: #05c46b; transform: scale(0.98); }
 button:disabled { background: #808e9b; opacity: 0.5; }
 
-#setup-panel { background: #3c40c6; padding: 10px; border-radius: 10px; margin-bottom: 10px; }
+#setup-panel { background: #3c40c6; padding: 10px; border-radius: 10px; margin-bottom: 10px; width: 100%; max-width: 350px;}
 #setup-instruction { color: #ffdd59; margin-bottom: 10px; font-size: 16px; }
 .setup-controls { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
 .setup-controls button { width: 48%; font-size: 14px; padding: 10px; }
 
 .big-btn { background: #ffdd59; font-size: 18px; padding: 15px; }
 
-.boards { display: flex; flex-direction: column; gap: 15px; align-items: center; margin-top: 10px; }
+.boards { display: flex; flex-direction: column; gap: 15px; align-items: center; margin-top: 10px; width: 100%; }
 .board-wrapper { width: 100%; max-width: 400px; }
 
-/* АДАПТИВНАЯ СЕТКА 10х10 */
 .board {
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    aspect-ratio: 1 / 1; /* Всегда идеальный квадрат */
-    width: 100%;
-    gap: 1px;
-    background-color: #0fbcf9;
-    padding: 2px;
-    border: 2px solid #4bcffa;
-    border-radius: 5px;
-    touch-action: none; /* Запрещает свайп страницы при возне с кораблями */
+    display: grid; grid-template-columns: repeat(10, 1fr); aspect-ratio: 1 / 1; 
+    width: 100%; gap: 1px; background-color: #0fbcf9; padding: 2px;
+    border: 2px solid #4bcffa; border-radius: 5px; touch-action: none;
 }
 .board.disabled { opacity: 0.5; pointer-events: none; }
 
-.cell {
-    background-color: #d2dae2;
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent; /* Убирает синий квадрат при тапе */
-}
+.cell { background-color: #d2dae2; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 16px; user-select: none; -webkit-tap-highlight-color: transparent; }
 
-/* Цвета на поле */
 .cell.ship { background-color: #808e9b; } 
 .cell.hit { background-color: #ff3f34; }
 .cell.miss { background-color: #1e272e; }
@@ -65,3 +50,14 @@ button:disabled { background: #808e9b; opacity: 0.5; }
 .skills-panel { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
 .skill-btn { background: #ffdd59; width: auto; font-size: 14px; padding: 10px; }
 .skill-btn.cancel { background: #ff3f34; color: white; }
+
+/* СТИЛИ ЧАТА */
+#chat-panel { background: #2f3640; border-radius: 10px; padding: 10px; margin-top: 20px; width: 100%; max-width: 400px; box-sizing: border-box; }
+#chat-messages { height: 120px; overflow-y: auto; background: #1e272e; border-radius: 5px; padding: 5px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 5px; }
+.chat-msg { padding: 6px 10px; border-radius: 12px; font-size: 14px; max-width: 85%; word-wrap: break-word; text-align: left; }
+.chat-msg.enemy { background: #485460; color: #d2dae2; align-self: flex-start; border-bottom-left-radius: 2px; }
+.chat-msg.self { background: #0be881; color: #1e272e; align-self: flex-end; border-bottom-right-radius: 2px; }
+.chat-msg.system { background: transparent; color: #ffdd59; text-align: center; font-size: 12px; align-self: center; font-style: italic; }
+.chat-input-wrapper { display: flex; gap: 5px; }
+.chat-input-wrapper input { flex-grow: 1; margin: 0; }
+.chat-input-wrapper button { width: 50px; margin: 0; padding: 10px; }
