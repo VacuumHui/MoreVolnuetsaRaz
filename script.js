@@ -11,6 +11,10 @@ let gameState = 'DISCONNECTED';
 let isMyTurn = false;
 let isHost = false; 
 
+// Никнеймы
+let myNick = "Игрок";
+let enemyNick = "Противник";
+
 // Данные
 let myGrid = Array(10).fill(null).map(() => Array(10).fill(0)); 
 let myShipsObjects =[
@@ -29,7 +33,7 @@ let selectedShip = null;
 let selectedMine = null;
 let isVerticalActive = false;
 
-// ===================== 1. СЕТЬ =====================
+// ===================== 1. СЕТЬ И ЧАТ =====================
 peer.on('open', id => {
     document.getElementById('my-id').innerText = id;
     statusEl.innerText = "Ожидание...";
@@ -49,44 +53,70 @@ document.getElementById('connect-btn').addEventListener('click', () => {
 
 function setupConnection() {
     conn.on('open', () => {
+        // Установка никнейма
+        let inputNick = document.getElementById('my-nick').value.trim();
+        if (inputNick) myNick = inputNick;
+        
         document.getElementById('connection-panel').style.display = 'none';
-        document.getElementById('game-zone').style.display = 'block';
+        document.getElementById('game-zone').style.display = 'flex';
+        document.getElementById('game-zone').style.flexDirection = 'column';
+        document.getElementById('game-zone').style.alignItems = 'center';
+        document.getElementById('chat-panel').style.display = 'block';
+        
         gameState = 'SETUP';
         
+        // Отправляем свой ник врагу
+        conn.send({ type: 'HELLO', nick: myNick });
+        
         initBoards();
-        randomizeFleet(); // Защищенный рандом
+        randomizeFleet();
+        appendChat('', 'Соединение установлено! Расставляйте флот.', 'system');
     });
     conn.on('data', handleNetworkData);
 }
 
+// Логика Чата
+document.getElementById('chat-send').addEventListener('click', sendChat);
+document.getElementById('chat-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') sendChat(); });
+
+function sendChat() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+    appendChat(myNick, text, 'self');
+    conn.send({ type: 'CHAT', text: text });
+    input.value = '';
+}
+
+function appendChat(sender, text, type) {
+    const msgs = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg ' + type;
+    div.innerText = type === 'system' ? text : `${sender}: ${text}`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight; // Автоскролл вниз
+}
+
 // ===================== 2. РАССТАНОВКА И ТАПЫ =====================
+// (Весь блок расстановки и генерации такой же, как в прошлой версии)
 function initBoards() {
     for (let y = 0; y < 10; y++) {
         for (let x = 0; x < 10; x++) {
-            const myCell = document.createElement('div');
-            myCell.className = 'cell'; myCell.dataset.x = x; myCell.dataset.y = y;
-            myBoardEl.appendChild(myCell);
-
-            const enemyCell = document.createElement('div');
-            enemyCell.className = 'cell'; enemyCell.dataset.x = x; enemyCell.dataset.y = y;
-            enemyBoardEl.appendChild(enemyCell);
+            const myCell = document.createElement('div'); myCell.className = 'cell'; myCell.dataset.x = x; myCell.dataset.y = y; myBoardEl.appendChild(myCell);
+            const enemyCell = document.createElement('div'); enemyCell.className = 'cell'; enemyCell.dataset.x = x; enemyCell.dataset.y = y; enemyBoardEl.appendChild(enemyCell);
         }
     }
 }
-
 document.getElementById('random-btn').addEventListener('click', randomizeFleet);
-
 document.getElementById('rotate-btn').addEventListener('click', () => {
     isVerticalActive = !isVerticalActive;
     document.getElementById('rotate-btn').innerText = isVerticalActive ? "🔄 Поворот: Верт." : "🔄 Поворот: Горизонт.";
     if (selectedShip) setupInstruction.innerText = `В руке: Корабль (${selectedShip.size}). Тапни куда поставить.`;
 });
 
-// Защищенный генератор (чтобы не висло)
 function randomizeFleet() {
     selectedShip = null; selectedMine = null;
-    let success = false;
-    let attemptsGlobal = 0;
+    let success = false; let attemptsGlobal = 0;
 
     while (!success && attemptsGlobal < 50) {
         success = true; attemptsGlobal++;
@@ -96,19 +126,14 @@ function randomizeFleet() {
         for (let ship of myShipsObjects) {
             let placed = false; let attempts = 0;
             while (!placed && attempts < 100) {
-                let x = Math.floor(Math.random() * 10);
-                let y = Math.floor(Math.random() * 10);
-                let isVert = Math.random() > 0.5;
+                let x = Math.floor(Math.random() * 10); let y = Math.floor(Math.random() * 10); let isVert = Math.random() > 0.5;
                 updateGridArray();
-                if (canPlaceShip(x, y, ship.size, isVert)) {
-                    ship.x = x; ship.y = y; ship.isVert = isVert; placed = true;
-                }
+                if (canPlaceShip(x, y, ship.size, isVert)) { ship.x = x; ship.y = y; ship.isVert = isVert; placed = true; }
                 attempts++;
             }
             if (!placed) { success = false; break; }
         }
         if (!success) continue;
-
         for (let mine of myMinesObjects) {
             let placed = false; let attempts = 0;
             while(!placed && attempts < 100) {
@@ -120,7 +145,6 @@ function randomizeFleet() {
             if(!placed) { success = false; break; }
         }
     }
-    
     updateGridArray(); drawMyBoard();
     setupInstruction.innerText = "Флот расставлен! Тапни на корабль, чтобы переместить.";
 }
@@ -129,17 +153,13 @@ function updateGridArray() {
     myGrid = Array(10).fill(null).map(() => Array(10).fill(0));
     myShipsObjects.forEach(s => {
         if (s.x === -1) return;
-        for(let i=0; i<s.size; i++) {
-            let cx = s.x + (s.isVert ? 0 : i); let cy = s.y + (s.isVert ? i : 0);
-            myGrid[cy][cx] = 1;
-        }
+        for(let i=0; i<s.size; i++) { let cx = s.x + (s.isVert ? 0 : i); let cy = s.y + (s.isVert ? i : 0); myGrid[cy][cx] = 1; }
     });
     myMinesObjects.forEach(m => { if (m.x !== -1) myGrid[m.y][m.x] = 2; });
 }
 
 function canPlaceShip(x, y, size, isVert) {
-    if (isVert && y + size > 10) return false;
-    if (!isVert && x + size > 10) return false;
+    if (isVert && y + size > 10) return false; if (!isVert && x + size > 10) return false;
     for (let i = -1; i <= size; i++) {
         for (let j = -1; j <= 1; j++) {
             let cx = x + (isVert ? j : i); let cy = y + (isVert ? i : j);
@@ -152,56 +172,39 @@ function canPlaceShip(x, y, size, isVert) {
 function drawMyBoard() {
     for (let y = 0; y < 10; y++) {
         for (let x = 0; x < 10; x++) {
-            let cell = myBoardEl.children[y * 10 + x];
-            cell.className = 'cell'; 
+            let cell = myBoardEl.children[y * 10 + x]; cell.className = 'cell'; 
             if (myGrid[y][x] === 1) cell.classList.add('ship');
-            if (myGrid[y][x] === 2) { cell.classList.add('mine'); cell.innerText = '💥'; }
-            else { cell.innerText = ''; }
+            if (myGrid[y][x] === 2) { cell.classList.add('mine'); cell.innerText = '💥'; } else { cell.innerText = ''; }
         }
     }
 }
 
-// УПРАВЛЕНИЕ ПАЛЬЦЕМ (Клик)
 myBoardEl.addEventListener('click', (e) => {
     if (gameState !== 'SETUP') return;
-    const cell = e.target.closest('.cell');
-    if (!cell) return;
+    const cell = e.target.closest('.cell'); if (!cell) return;
     const x = parseInt(cell.dataset.x); const y = parseInt(cell.dataset.y);
 
     if (selectedShip) {
         updateGridArray();
         if (canPlaceShip(x, y, selectedShip.size, isVerticalActive)) {
-            selectedShip.x = x; selectedShip.y = y; selectedShip.isVert = isVerticalActive;
-            selectedShip = null;
-            updateGridArray(); drawMyBoard();
-            setupInstruction.innerText = "Корабль поставлен!";
-        } else {
-            setupInstruction.innerText = "❌ Сюда ставить нельзя!";
-        }
+            selectedShip.x = x; selectedShip.y = y; selectedShip.isVert = isVerticalActive; selectedShip = null;
+            updateGridArray(); drawMyBoard(); setupInstruction.innerText = "Корабль поставлен!";
+        } else { setupInstruction.innerText = "❌ Сюда ставить нельзя!"; }
     } else if (selectedMine) {
         updateGridArray();
         if (myGrid[y][x] === 0) {
             selectedMine.x = x; selectedMine.y = y; selectedMine = null;
-            updateGridArray(); drawMyBoard();
-            setupInstruction.innerText = "Мина установлена!";
-        } else {
-            setupInstruction.innerText = "❌ Мину только в пустую клетку!";
-        }
-    } else { // ВЗЯТИЕ
-        let clickedShip = myShipsObjects.find(s => 
-            s.x !== -1 && ((s.isVert && x === s.x && y >= s.y && y < s.y + s.size) || 
-            (!s.isVert && y === s.y && x >= s.x && x < s.x + s.size))
-        );
+            updateGridArray(); drawMyBoard(); setupInstruction.innerText = "Мина установлена!";
+        } else { setupInstruction.innerText = "❌ Мину только в пустую клетку!"; }
+    } else { 
+        let clickedShip = myShipsObjects.find(s => s.x !== -1 && ((s.isVert && x === s.x && y >= s.y && y < s.y + s.size) || (!s.isVert && y === s.y && x >= s.x && x < s.x + s.size)));
         if (clickedShip) {
-            selectedShip = clickedShip; clickedShip.x = -1; clickedShip.y = -1;
-            updateGridArray(); drawMyBoard();
-            setupInstruction.innerText = `В руке: Корабль (${clickedShip.size} палуб). Тапни по полю.`;
-            return;
+            selectedShip = clickedShip; clickedShip.x = -1; clickedShip.y = -1; updateGridArray(); drawMyBoard();
+            setupInstruction.innerText = `В руке: Корабль (${clickedShip.size}). Тапни по полю.`; return;
         }
         let clickedMine = myMinesObjects.find(m => m.x === x && m.y === y);
         if (clickedMine) {
-            selectedMine = clickedMine; clickedMine.x = -1; clickedMine.y = -1;
-            updateGridArray(); drawMyBoard();
+            selectedMine = clickedMine; clickedMine.x = -1; clickedMine.y = -1; updateGridArray(); drawMyBoard();
             setupInstruction.innerText = `В руке: Мина. Тапни по полю.`;
         }
     }
@@ -212,7 +215,6 @@ let amIReady = false, isEnemyReady = false;
 
 document.getElementById('ready-btn').addEventListener('click', () => {
     if (selectedShip || selectedMine) return alert("Сначала поставь предмет на поле!");
-    
     myShips = myShipsObjects.map(s => {
         let cells =[];
         for(let i=0; i<s.size; i++) cells.push({ x: s.x + (s.isVert ? 0 : i), y: s.y + (s.isVert ? i : 0), hit: false });
@@ -222,12 +224,14 @@ document.getElementById('ready-btn').addEventListener('click', () => {
     amIReady = true;
     document.getElementById('setup-panel').style.display = 'none';
     document.getElementById('battle-panel').style.display = 'block';
-    document.getElementById('enemy-wrapper').style.display = 'block'; // Показываем врага
-    document.getElementById('my-board-title').innerText = "Твой флот (Мини)";
-    myBoardEl.style.maxWidth = "200px"; // Уменьшаем наше поле на мобилке во время боя
+    document.getElementById('enemy-wrapper').style.display = 'block'; 
+    
+    document.getElementById('my-board-title').innerText = "Твой флот (" + myNick + ")";
+    myBoardEl.style.maxWidth = "200px"; // Уменьшаем наше поле на мобилке
     
     gameState = 'WAITING';
     conn.send({ type: 'READY' });
+    appendChat('', 'Флот готов к бою!', 'system');
     checkStart();
 });
 
@@ -235,17 +239,18 @@ function checkStart() {
     if (amIReady && isEnemyReady) {
         document.getElementById('skills-panel').style.display = 'flex';
         gameState = 'BATTLE'; isMyTurn = !isHost;
+        appendChat('', 'Игра началась!', 'system');
         updateTurnUI();
     }
 }
 
 function updateTurnUI() {
     if (isMyTurn) {
-        turnIndicator.innerText = "⚔️ ТВОЙ ХОД! Атакуй!";
+        turnIndicator.innerText = "⚔️ ТВОЙ ХОД!";
         turnIndicator.style.color = "#0be881";
         enemyBoardEl.classList.remove('disabled');
     } else {
-        turnIndicator.innerText = "⏳ Ход противника...";
+        turnIndicator.innerText = "⏳ Ход: " + enemyNick;
         turnIndicator.style.color = "#ff3f34";
         enemyBoardEl.classList.add('disabled');
     }
@@ -253,8 +258,7 @@ function updateTurnUI() {
 
 enemyBoardEl.addEventListener('click', (e) => {
     if (gameState !== 'BATTLE' || !isMyTurn) return;
-    const cell = e.target.closest('.cell');
-    if (!cell) return;
+    const cell = e.target.closest('.cell'); if (!cell) return;
     executeAction(parseInt(cell.dataset.x), parseInt(cell.dataset.y));
 });
 
@@ -263,6 +267,7 @@ function executeAction(x, y) {
     else if (currentAction === 'radar') { conn.send({ type: 'RADAR', x, y }); skills.radar--; document.getElementById('skill-radar').disabled = true; }
     else if (currentAction === 'airstrike') { conn.send({ type: 'AIRSTRIKE', x, y }); skills.airstrike--; document.getElementById('skill-airstrike').disabled = true; }
     
+    // Временно блокируем клики, пока не придет ответ
     isMyTurn = false;
     currentAction = 'shoot'; document.getElementById('skill-cancel').style.display = 'none';
     enemyBoardEl.style.borderColor = '#4bcffa';
@@ -270,18 +275,57 @@ function executeAction(x, y) {
 }
 
 function handleNetworkData(data) {
-    if (data.type === 'READY') { isEnemyReady = true; checkStart(); }
+    if (data.type === 'HELLO') {
+        enemyNick = data.nick || "Противник";
+        document.getElementById('enemy-board-title').innerText = "Территория: " + enemyNick;
+    }
+    else if (data.type === 'CHAT') {
+        appendChat(enemyNick, data.text, 'enemy');
+    }
+    else if (data.type === 'READY') { 
+        isEnemyReady = true; 
+        appendChat('', enemyNick + ' расставил флот!', 'system');
+        checkStart(); 
+    }
+    
+    // ВРАГ АТАКОВАЛ НАС
     else if (data.type === 'SHOOT') {
         let result = processIncomingAttack(data.x, data.y);
         conn.send({ type: 'REPLY_SHOOT', x: data.x, y: data.y, result });
-        if (result.status !== 'mine') isMyTurn = true; 
-        updateTurnUI(); checkLose();
+        
+        // Исправленная логика передачи хода:
+        // Если враг попал в корабль - он стреляет еще раз. Иначе ход переходит к нам.
+        if (result.status === 'hit' || result.status === 'sunk') {
+            isMyTurn = false;
+        } else {
+            isMyTurn = true; 
+        }
+        updateTurnUI(); 
+        checkLose();
     }
+    // ОТВЕТ НА НАШУ АТАКУ
     else if (data.type === 'REPLY_SHOOT') {
         updateEnemyBoard(data.x, data.y, data.result);
-        if (data.result.status === 'mine') { alert("💥 ТЫ ПОПАЛ НА МИНУ! Пропуск хода!"); isMyTurn = false; }
+        
+        if (data.result.status === 'hit' || data.result.status === 'sunk') {
+            isMyTurn = true; // Мы попали - стреляем еще раз!
+        } else {
+            isMyTurn = false; // Промах или мина - ход уходит
+        }
+
+        // МЕХАНИКА МИНЫ: Если мы попали в мину, наш случайный корабль получает урон!
+        if (data.result.status === 'mine') {
+            alert(`💥 Внимание! Ты попал на мину игрока ${enemyNick}!\nОдин из твоих кораблей получил случайный урон, а ход переходит врагу.`);
+            applyMinePenalty(); // Наносим себе урон
+        }
         updateTurnUI();
     }
+    // ВРАГ ПОЛУЧИЛ УРОН ОТ МИНЫ И ПРИСЛАЛ НАМ РЕЗУЛЬТАТ
+    else if (data.type === 'MINE_SHRAPNEL') {
+        updateEnemyBoard(data.x, data.y, data.result);
+        appendChat('', enemyNick + ' подорвался на твоей мине!', 'system');
+    }
+
     else if (data.type === 'RADAR') {
         let found = false;
         for(let dy=-1; dy<=1; dy++) for(let dx=-1; dx<=1; dx++) {
@@ -289,10 +333,10 @@ function handleNetworkData(data) {
             if(nx>=0 && nx<10 && ny>=0 && ny<10 && myGrid[ny][nx]===1) found = true;
         }
         conn.send({ type: 'REPLY_RADAR', x: data.x, y: data.y, found });
-        isMyTurn = true; updateTurnUI();
+        isMyTurn = true; updateTurnUI(); // Радар забирает ход
     }
     else if (data.type === 'REPLY_RADAR') {
-        alert(data.found ? "📡 РАДАР: В этой зоне есть корабли!" : "📡 РАДАР: Зона чиста.");
+        alert(data.found ? "📡 РАДАР: В этой зоне ЕСТЬ корабли!" : "📡 РАДАР: Зона чиста.");
         let cell = enemyBoardEl.children[data.y * 10 + data.x];
         cell.classList.add('radar-zone'); setTimeout(() => cell.classList.remove('radar-zone'), 3000);
     }
@@ -303,7 +347,29 @@ function handleNetworkData(data) {
         isMyTurn = true; updateTurnUI(); checkLose();
     }
     else if (data.type === 'REPLY_AIRSTRIKE') { data.results.forEach(r => updateEnemyBoard(r.x, r.y, r.res)); }
-    else if (data.type === 'WIN') { alert("🎉 ТЫ ПОБЕДИЛ!"); location.reload(); }
+    
+    else if (data.type === 'WIN') { 
+        alert("🎉 ПОБЕДА! " + enemyNick + " разбит!"); 
+        location.reload(); 
+    }
+}
+
+// Новая функция для урона самому себе при взрыве на мине
+function applyMinePenalty() {
+    let aliveCells =[];
+    myShips.forEach(ship => {
+        ship.forEach(p => { if (!p.hit) aliveCells.push({ x: p.x, y: p.y }); });
+    });
+    
+    if (aliveCells.length > 0) {
+        // Выбираем случайную целую палубу
+        let target = aliveCells[Math.floor(Math.random() * aliveCells.length)];
+        let res = processIncomingAttack(target.x, target.y);
+        
+        // Отправляем врагу инфу, чтобы он видел на своем экране, как наш корабль загорелся
+        conn.send({ type: 'MINE_SHRAPNEL', x: target.x, y: target.y, result: res });
+        checkLose();
+    }
 }
 
 function processIncomingAttack(x, y) {
@@ -332,7 +398,7 @@ function updateEnemyBoard(x, y, result) {
 }
 
 function checkLose() {
-    if (!myShips.some(ship => ship.some(p => !p.hit))) { conn.send({ type: 'WIN' }); setTimeout(() => { alert("💀 ТЫ ПРОИГРАЛ!"); location.reload(); }, 500); }
+    if (!myShips.some(ship => ship.some(p => !p.hit))) { conn.send({ type: 'WIN' }); setTimeout(() => { alert("💀 ПОРАЖЕНИЕ! Твой флот на дне."); location.reload(); }, 500); }
 }
 
 document.getElementById('skill-radar').onclick = () => { currentAction = 'radar'; enemyBoardEl.style.borderColor = '#ffd32a'; document.getElementById('skill-cancel').style.display = 'inline-block'; };
