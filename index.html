@@ -2,59 +2,59 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Морской Бой 2.0</title>
+    <!-- КРИТИЧЕСКИ ВАЖНО ДЛЯ МОБИЛОК: запрещаем масштабирование пальцами -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Морской Бой Mobile</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Морской Бой: Эволюция 🌊</h1>
+        <h1>Морской Бой 🌊</h1>
         
         <!-- Панель подключения -->
         <div id="connection-panel">
             <p>Твой ID: <strong id="my-id" style="color:#0be881;">Генерация...</strong></p>
             <div class="connect-box">
-                <input type="text" id="enemy-id" placeholder="Введи ID друга">
-                <button id="connect-btn">Подключиться</button>
+                <input type="text" id="enemy-id" placeholder="ID друга">
+                <button id="connect-btn">Связь</button>
             </div>
-            <p id="status">Ожидание подключения...</p>
+            <p id="status">Ожидание...</p>
         </div>
 
-        <!-- Игровая зона -->
         <div id="game-zone" style="display: none;">
             
-            <!-- ПАНЕЛЬ РАССТАНОВКИ (Новое!) -->
+            <!-- ПАНЕЛЬ РАССТАНОВКИ -->
             <div id="setup-panel">
-                <h2>Подготовка флота</h2>
+                <h3 id="setup-instruction">Нажми на корабль, чтобы взять его</h3>
                 <div class="setup-controls">
-                    <button id="random-btn">🎲 Перемешать</button>
                     <button id="rotate-btn">🔄 Поворот: Горизонт.</button>
-                    <button id="ready-btn">✅ В БОЙ!</button>
+                    <button id="random-btn">🎲 Рандом</button>
                 </div>
-                <p id="setup-instruction">Нажми на корабль или мину на своем поле, чтобы передвинуть вручную</p>
+                <button id="ready-btn" class="big-btn">✅ В БОЙ!</button>
             </div>
 
-            <!-- Панель статуса в бою -->
+            <!-- ПАНЕЛЬ БОЯ -->
             <div class="top-panel" id="battle-panel" style="display: none;">
-                <h2 id="turn-indicator">Ожидание противника...</h2>
+                <h2 id="turn-indicator">Ожидание...</h2>
             </div>
 
-            <!-- Спецумения -->
+            <!-- СПЕЦУМЕНИЯ -->
             <div class="skills-panel" id="skills-panel" style="display: none;">
-                <button id="skill-radar" class="skill-btn">📡 Радар (1)</button>
-                <button id="skill-airstrike" class="skill-btn">✈️ Авиаудар (1)</button>
+                <button id="skill-radar" class="skill-btn">📡 Радар</button>
+                <button id="skill-airstrike" class="skill-btn">✈️ Авиаудар</button>
                 <button id="skill-cancel" class="skill-btn cancel" style="display:none;">❌ Отмена</button>
             </div>
             
+            <!-- ПОЛЯ (Адаптивные) -->
             <div class="boards">
-                <div class="board-wrapper">
-                    <h3>Твой флот</h3>
-                    <div id="my-board" class="board"></div>
-                </div>
-                <div class="board-wrapper">
+                <div class="board-wrapper" id="enemy-wrapper" style="display: none;">
                     <h3>Территория врага</h3>
                     <div id="enemy-board" class="board disabled"></div>
+                </div>
+                <div class="board-wrapper" id="my-wrapper">
+                    <h3 id="my-board-title">Твой флот</h3>
+                    <div id="my-board" class="board"></div>
                 </div>
             </div>
         </div>
